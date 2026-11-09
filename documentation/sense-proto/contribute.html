@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contributing | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html" class="active">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Contributing</h1>
+
+            <p>Two repositories hold the material this site describes. Documentation HTML lives in <a href="https://github.com/sense-makors/sense-makors" target="_blank">sense-makors/sense-makors</a> under <code>documentation/sense-proto/</code>. The Solid server used in the examples lives in <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a> and is licensed Apache-2.0.</p>
+
+            <h2>Documentation</h2>
+
+            <p>Each page is a static HTML file that links to its neighbours with relative URLs and loads <code>css/styles.css</code>. Adding a page means adding the file and a sidebar link on every page that shares this navigation, including the new file.</p>
+
+            <ol>
+                <li>Edit or add a file in <code>documentation/sense-proto/</code>.</li>
+                <li>Keep new links on a page that exists in that directory, or on a URL you have opened successfully.</li>
+                <li>Open a pull request against <code>sense-makors/sense-makors</code>.</li>
+            </ol>
+
+            <h2>Worked example: run the server tests</h2>
+
+            <p>For a change to OpenID, clone that repository and run the tests named in its README:</p>
+
+            <pre><code>git clone https://github.com/Hewlbern/openID.git
+cd openID
+go test ./internal/... ./test/...</code></pre>
+
+            <p>The HTTP suite builds the server and then runs <code>test/functional/run.sh</code>:</p>
+
+            <pre><code>go build -o /tmp/openid ./cmd/server
+/tmp/openid -port 3460 -storage /tmp/openid-data -base-url http://localhost:3460 &amp;
+BASE_URL=http://localhost:3460 ./test/functional/run.sh</code></pre>
+
+            <p>That script registers an account, writes <code>/workspace/note.txt</code>, patches Turtle with SPARQL Update, registers an agent, and checks <code>/health</code> and the well-known documents. Match new behaviour to those assertions instead of adding a route that nothing calls.</p>
+
+            <h2>What to send</h2>
+
+            <ul>
+                <li>A documentation change that fixes a link should include the new href target in the same pull request.</li>
+                <li>A server change should include or update a functional assertion when it changes a status code or a JSON field the tests already read (<code>token</code>, <code>webId</code>, <code>account.podPath</code>, <code>agent.webId</code>, <code>agent.podPath</code>).</li>
+                <li>Issues for the server go to <a href="https://github.com/Hewlbern/openID/issues" target="_blank">Hewlbern/openID issues</a>. Issues for these pages go to <a href="https://github.com/sense-makors/sense-makors/issues" target="_blank">sense-makors/sense-makors issues</a>.</li>
+            </ul>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>The page list and external references are collected on <a href="resources.html">Resources</a>. The route list is the <a href="api.html">API</a> page.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>

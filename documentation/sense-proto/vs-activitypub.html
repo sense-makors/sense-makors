@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sense-Proto vs. ActivityPub | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html" class="active">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Sense-Proto vs. ActivityPub</h1>
+
+            <p>ActivityPub moves activities between servers. Sense-Proto, as these pages describe it, stores documents in a pod and authorizes each HTTP request. A pod does not become an ActivityPub inbox because it stores a note. The comparison below is about the shape of a write, using ActivityPub's published vocabulary and the OpenID PUT that <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a> actually accepts.</p>
+
+            <h2>Where a write goes</h2>
+
+            <table>
+                <thead>
+                    <tr><th></th><th>ActivityPub</th><th>Pod write on this site</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Unit</td>
+                        <td>An activity, often a <code>Create</code>, posted to an inbox or outbox.</td>
+                        <td>An HTTP request to a resource URL. <code>PUT /workspace/note.txt</code> creates that resource.</td>
+                    </tr>
+                    <tr>
+                        <td>Identity</td>
+                        <td>An actor URL on the sending server.</td>
+                        <td>A WebID. OpenID returns one that contains <code>profile/card#me</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Authorization</td>
+                        <td>Server-to-server signatures and recipient lists on the activity.</td>
+                        <td>Bearer token, client credentials, or the <code>X-Agent-*</code> signature headers. Missing credentials on <code>PUT</code> return <code>401</code>.</td>
+                    </tr>
+                    <tr>
+                        <td>Delivery</td>
+                        <td>The sender's server posts the activity to each recipient's inbox.</td>
+                        <td>No inbox fan-out is performed by the note PUT. A later <code>GET</code> reads the resource back.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Worked example: the same sentence, two writes</h2>
+
+            <p>An ActivityPub <code>Create</code> of a public note, following the activity vocabulary, addresses an outbox:</p>
+
+            <pre><code>POST /users/ada/outbox HTTP/1.1
+Host: social.example
+Content-Type: application/ld+json
+
+{
+  "@context": "https://www.w3.org/ns/activitystreams",
+  "type": "Create",
+  "actor": "https://social.example/users/ada",
+  "to": ["https://www.w3.org/ns/activitystreams#Public"],
+  "object": {
+    "type": "Note",
+    "content": "Hello from Ada"
+  }
+}</code></pre>
+
+            <p>The pod write that the OpenID functional test performs is not that activity. It stores the bytes at a URL the client chooses:</p>
+
+            <pre><code>curl -i -X PUT http://localhost:3000/workspace/note.txt \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: text/plain' \
+  --data 'Hello from Ada'</code></pre>
+
+            <p>The response status for a new resource is <code>201</code>. <code>GET /workspace/note.txt</code> returns <code>Hello from Ada</code>. Nothing in that exchange posts a <code>Create</code> to another server.</p>
+
+            <p>The ActivityPub vocabulary is specified at <a href="https://www.w3.org/TR/activitypub/" target="_blank">w3.org/TR/activitypub</a>. The pod request is specified by the Solid protocol and implemented by <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID</a>. A side-by-side with ATProto is on <a href="vs-atproto.html">Sense-Proto vs. ATProto</a>.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>See how the Bearer token is issued on the <a href="authentication.html">Authentication</a> page.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>

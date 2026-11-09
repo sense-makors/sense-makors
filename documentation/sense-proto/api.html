@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>HTTP API</h1>
+
+            <p>Sense-Proto clients talk to a Solid pod over HTTP. This page lists the routes implemented by <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID</a> (<code>Hewlbern/openID</code>). Paths and fields below are the ones its functional tests and README call. Routes that are not in that server are not listed here.</p>
+
+            <div class="callout">
+                <h4>Two processes</h4>
+                <p>The long-lived Go server owns the pod volume. The passport UI can proxy identity calls. Local examples in this documentation use the Go server on <code>http://localhost:3000</code>.</p>
+            </div>
+
+            <h2>Identity</h2>
+
+            <table>
+                <thead>
+                    <tr><th>Request</th><th>Role</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>GET /health</code></td><td>Liveness. Body is <code>{"status":"ok"}</code>.</td></tr>
+                    <tr><td><code>GET /.well-known/openid-configuration</code></td><td>OIDC discovery document. Includes <code>issuer</code> and <code>token_endpoint</code>.</td></tr>
+                    <tr><td><code>GET /.well-known/solid</code></td><td>Solid storage description.</td></tr>
+                    <tr><td><code>POST /idp/register</code></td><td>Create an account and, with <code>createPod: true</code>, a pod.</td></tr>
+                    <tr><td><code>POST /idp/login</code></td><td>Password login. Returns a Bearer <code>token</code>.</td></tr>
+                    <tr><td><code>POST /idp/client-credentials</code></td><td>Mint a machine client. Body <code>{"name":"bot"}</code> returns <code>id</code> and <code>secret</code>.</td></tr>
+                    <tr><td><code>POST /oauth/token</code></td><td>Exchange <code>grant_type=client_credentials</code> for <code>access_token</code>.</td></tr>
+                    <tr><td><code>POST /agents</code></td><td>Register an AI agent. Body <code>{"name":"Atlas"}</code>. Response includes <code>token</code>, <code>agent.webId</code>, <code>agent.podPath</code>, <code>agent.publicKey</code>, and <code>privateKey</code>.</td></tr>
+                    <tr><td><code>GET /agents</code></td><td>List registered agents.</td></tr>
+                </tbody>
+            </table>
+
+            <h2>Pod resources</h2>
+
+            <p>Resource URLs accept <code>GET</code>, <code>HEAD</code>, <code>PUT</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code>, and <code>OPTIONS</code>.</p>
+
+            <ul>
+                <li>Containers end with <code>/</code> and their Turtle body uses <code>ldp:contains</code>.</li>
+                <li>Create a container with <code>Link: &lt;http://www.w3.org/ns/ldp#BasicContainer&gt;; rel="type"</code>.</li>
+                <li><code>POST</code> to a container accepts a <code>Slug</code> header. The response is <code>201</code> with a <code>Location</code> header.</li>
+                <li><code>PATCH</code> accepts <code>Content-Type: application/sparql-update</code> or <code>text/n3</code>. <code>OPTIONS</code> advertises <code>sparql-update</code> in <code>Accept-Patch</code>.</li>
+                <li>ACL documents live at <code>{resource}.acl</code> or <code>{container}/.acl</code>. A successful <code>GET</code> includes <code>Link</code> with <code>rel="acl"</code>.</li>
+                <li>Conditional writes use <code>If-Match</code> and <code>If-None-Match</code>. A stale <code>If-Match</code> returns <code>412</code>.</li>
+            </ul>
+
+            <h2>Audit and notifications</h2>
+
+            <table>
+                <thead>
+                    <tr><th>Request</th><th>Role</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>GET /audit/events/</code></td><td>List audit events.</td></tr>
+                    <tr><td><code>GET /audit/events/{id}</code></td><td>One event, including its IPFS CID when pinning is configured.</td></tr>
+                    <tr><td><code>GET /audit/events/{id}/verify</code></td><td>Check the event hash, Merkle path, and OpenTimestamps proof. The JSON includes <code>verified</code>.</td></tr>
+                    <tr><td><code>POST /audit/flush</code></td><td>Batch the current events and stamp the Merkle root. The JSON includes <code>merkleRoot</code>.</td></tr>
+                    <tr><td><code>GET /notifications/stream?topic=</code></td><td>Server-sent events for a topic.</td></tr>
+                    <tr><td><code>GET /notifications/websocket?topic=</code></td><td>WebSocket stream for the same topics.</td></tr>
+                    <tr><td><code>GET /mcp</code> and <code>POST /mcp</code></td><td>MCP endpoint for a connected agent. A local server also answers <code>go run ./cmd/mcp</code> over stdio when <code>OPENID_BASE_URL</code> is set.</td></tr>
+                </tbody>
+            </table>
+
+            <h2>Worked example: register, then write a note</h2>
+
+            <p>Register with a pod. The functional test reads <code>token</code>, <code>webId</code> (it contains <code>profile/card#me</code>), and <code>account.podPath</code> from this response:</p>
+
+            <pre><code>curl -s -X POST http://localhost:3000/idp/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ada@example.com","password":"testpass123","name":"Ada","createPod":true}'</code></pre>
+
+            <p>Save the <code>token</code> value, then create a text resource. The same test expects <code>201</code> on create and the plain-text body on the following GET:</p>
+
+            <pre><code>curl -i -X PUT http://localhost:3000/workspace/note.txt \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: text/plain' \
+  --data 'hello functional'
+
+curl -s http://localhost:3000/workspace/note.txt
+# hello functional</code></pre>
+
+            <p>A <code>PUT</code> of the same URL with no <code>Authorization</code> header returns <code>401</code>. Repeating registration for an existing account returns <code>409</code>.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>The same calls are explained as a client on <a href="client-apps.html">Building Client Apps</a> and as a patch on <a href="sparql.html">Using SPARQL</a>. Source: <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>

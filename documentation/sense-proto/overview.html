@@ -178,9 +178,9 @@
             <h3>Solid Servers</h3>
             
             <ul>
-                <li><a href="https://github.com/solid/community-server" target="_blank">Solid Community Server</a> (JavaScript)</li>
+                <li><a href="https://github.com/CommunitySolidServer/CommunitySolidServer" target="_blank">Solid Community Server</a> (JavaScript)</li>
                 <li><a href="https://github.com/solid/node-solid-server" target="_blank">Node Solid Server</a> (JavaScript)</li>
-                <li><a href="https://github.com/solid/solid-nextcloud" target="_blank">Solid Nextcloud</a> (PHP)</li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">OpenID</a> (Go)</li>
                 <li>Custom implementations following the Solid specification</li>
             </ul>
             
@@ -196,7 +196,7 @@
             <h3>Development Libraries</h3>
             
             <ul>
-                <li><a href="https://github.com/solid/solid-client-js" target="_blank">solid-client-js</a>: JavaScript library for Solid applications</li>
+                <li><a href="https://www.npmjs.com/package/@inrupt/solid-client" target="_blank">@inrupt/solid-client</a>: JavaScript library for Solid applications</li>
                 <li><a href="https://github.com/solid/solid-auth-client" target="_blank">solid-auth-client</a>: Authentication library</li>
                 <li><a href="https://github.com/solid/query-ldflex" target="_blank">query-ldflex</a>: Simplified query syntax</li>
                 <li>Various RDF libraries in different programming languages</li>
@@ -204,9 +204,18 @@
             
             <p>These implementation options provide flexibility for developers to build Solid components that meet their specific needs.</p>
 
+            <h2>Worked example: ask a server if it is up</h2>
+
+            <p><a href="https://github.com/Hewlbern/openID" target="_blank">OpenID</a> is a Go Solid server you can run locally. Its health route is a single GET and the body is fixed:</p>
+
+            <pre><code>curl -s http://localhost:3000/health
+# {"status":"ok"}</code></pre>
+
+            <p>The process that serves that route is <code>go run ./cmd/server -port 3000 -storage ./data</code> from a checkout of the repository. The <a href="guides.html">Guides</a> page continues from this check into registration and writes.</p>
+
             <div class="callout">
                 <h4>Next Steps</h4>
-                <p>Now that you understand the overall architecture of Solid, you might want to check out the <a href="quickstart.html">Quickstart</a> guide to get hands-on experience with Solid.</p>
+                <p>Follow the <a href="quickstart.html">Quickstart</a>, or open the <a href="guides.html">guide index</a>.</p>
             </div>
         </main>
     </div>

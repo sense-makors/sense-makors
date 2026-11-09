@@ -77,6 +77,15 @@
                 </ul>
             </div>
 
+            <h2>Worked example: run OpenID</h2>
+
+            <p>The server these docs call for a local pod is <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>. From a clone:</p>
+
+            <pre><code>go run ./cmd/server -port 3000 -storage ./data
+curl -s http://localhost:3000/health</code></pre>
+
+            <p>The health body is <code>{"status":"ok"}</code>. Pod files are written under <code>./data</code>. Set <code>SOLID_BASE_URL</code> to the origin other people will use in WebIDs before you register accounts you want to keep. The same repository's <code>docker compose up -d</code> publishes the server on port 3000 with a volume. Registration, which returns <code>token</code> and <code>webId</code>, is the example on the <a href="authentication.html">Authentication</a> page.</p>
+
             <h2>Available Solid Server Implementations</h2>
             
             <p>There are several Solid server implementations to choose from, each with its own features and focus:</p>
@@ -104,16 +113,16 @@
                         <td>Legacy applications</td>
                     </tr>
                     <tr>
-                        <td><a href="https://github.com/solid/solidproject.org/wiki/Solid-Servers" target="_blank">Enterprise Solid Server (ESS)</a></td>
-                        <td>Various</td>
-                        <td>Enterprise features, scalability, support</td>
-                        <td>Enterprise deployments</td>
+                        <td><a href="https://solidproject.org/TR/protocol" target="_blank">Solid protocol</a></td>
+                        <td>Specification</td>
+                        <td>HTTP API for pods, WebIDs, and linked data</td>
+                        <td>Checking a server against the spec</td>
                     </tr>
                     <tr>
-                        <td><a href="https://github.com/solid/solid-nextcloud" target="_blank">Solid-Nextcloud</a></td>
-                        <td>PHP</td>
-                        <td>Integration with Nextcloud</td>
-                        <td>Existing Nextcloud users</td>
+                        <td><a href="https://github.com/Hewlbern/openID" target="_blank">OpenID</a></td>
+                        <td>Go</td>
+                        <td>WebID, WAC, LDP, Bearer and agent signatures</td>
+                        <td>Local pods and agent identity</td>
                     </tr>
                 </tbody>
             </table>
@@ -485,9 +494,9 @@ await server.start();</code></pre>
                 <h4>Resources</h4>
                 <p>For more information, check out:</p>
                 <ul>
-                    <li><a href="https://github.com/CommunitySolidServer/CommunitySolidServer/wiki" target="_blank">Community Solid Server Wiki</a></li>
-                    <li><a href="https://solidproject.org/developers" target="_blank">Solid Developer Resources</a></li>
-                    <li><a href="https://forum.solidproject.org/c/developers" target="_blank">Solid Developer Forum</a></li>
+                    <li><a href="https://github.com/CommunitySolidServer/CommunitySolidServer" target="_blank">Community Solid Server</a></li>
+                    <li><a href="https://solidproject.org/TR/protocol" target="_blank">Solid protocol</a></li>
+                    <li><a href="https://forum.solidproject.org/" target="_blank">Solid forum</a></li>
                 </ul>
             </div>
         </main>

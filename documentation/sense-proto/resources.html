@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html" class="active">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Resources</h1>
+
+            <p>Use these sources when you follow a link off this site. The server that the worked examples call is OpenID. The HTML you are reading is published from the documentation directory of sense-makors.</p>
+
+            <h2>Server and docs</h2>
+
+            <ul>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a> — Solid server for agent WebIDs, WAC, and the HTTP API on the <a href="api.html">API</a> page.</li>
+                <li><a href="https://github.com/sense-makors/sense-makors" target="_blank">sense-makors/sense-makors</a> — this documentation, under <code>documentation/sense-proto/</code>, plus the Python Solid client in <code>solid/</code>.</li>
+                <li><a href="https://github.com/Hewlbern/openID/blob/main/README.md" target="_blank">OpenID README</a> — quick start, route tables, and the agent demo.</li>
+                <li><a href="guides.html">Guides</a>, <a href="authentication.html">Authentication</a>, <a href="client-apps.html">Building Client Apps</a>, and <a href="sparql.html">Using SPARQL</a> on this site.</li>
+            </ul>
+
+            <h2>Solid specifications and community</h2>
+
+            <ul>
+                <li><a href="https://solidproject.org/" target="_blank">Solid Project</a></li>
+                <li><a href="https://solidproject.org/TR/protocol" target="_blank">Solid protocol</a></li>
+                <li><a href="https://forum.solidproject.org/" target="_blank">Solid forum</a></li>
+                <li><a href="https://github.com/CommunitySolidServer/CommunitySolidServer" target="_blank">Community Solid Server</a></li>
+                <li><a href="https://www.w3.org/TR/activitypub/" target="_blank">ActivityPub</a>, compared on <a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+
+            <h2>Worked example: confirm the server you cloned</h2>
+
+            <p>After cloning OpenID, this is the health check from its README. A running server answers with that JSON and nothing else on this route:</p>
+
+            <pre><code>git clone https://github.com/Hewlbern/openID.git
+cd openID
+go run ./cmd/server -port 3000 -storage ./data
+
+curl -s http://localhost:3000/health
+# {"status":"ok"}</code></pre>
+
+            <p>Discovery documents, which the functional test also fetches, are <code>GET /.well-known/openid-configuration</code> and <code>GET /.well-known/solid</code>. Both return <code>200</code> on a server started this way. Continue with <a href="authentication.html">Authentication</a> to turn that process into an account and a WebID.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>If you want to change these pages, follow <a href="contribute.html">Contributing</a>.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>
