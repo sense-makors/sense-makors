@@ -16,7 +16,7 @@
                 <li><a href="guides.html">Guides</a></li>
                 <li><a href="api.html">API</a></li>
                 <li><a href="contribute.html">Contribute</a></li>
-                <li><a href="https://github.com/sense-proto/sense-proto" target="_blank">GitHub</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
             </ul>
         </nav>
     </header>
@@ -709,15 +709,38 @@ async function accessProtectedResource() {
   return response.json();
 }</code></pre>
 
+            <h2>Worked example: OpenID account and Bearer write</h2>
+
+            <p>The server that issues the WebID and pod used by the other examples on this site is <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>. Start it with the commands on the <a href="guides.html">Guides</a> page. Registration returns JSON. The functional test reads <code>token</code>, <code>webId</code> (the value contains <code>profile/card#me</code>), and <code>account.podPath</code>:</p>
+
+            <pre><code>curl -s -X POST http://localhost:3000/idp/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ada@example.com","password":"testpass123","name":"Ada","createPod":true}'</code></pre>
+
+            <p>Logging in again uses the same email and password and also returns <code>token</code>:</p>
+
+            <pre><code>curl -s -X POST http://localhost:3000/idp/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ada@example.com","password":"testpass123"}'</code></pre>
+
+            <p>Put that token on a write. The test expects <code>201</code> and an <code>ETag</code>. The following GET returns the body <code>hello functional</code> and a <code>Link</code> header with <code>rel="acl"</code>. The same PUT without a token returns <code>401</code>.</p>
+
+            <pre><code>curl -i -X PUT http://localhost:3000/workspace/note.txt \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: text/plain' \
+  --data 'hello functional'</code></pre>
+
+            <p>An agent registered with <code>POST /agents</code> and <code>{"name":"Atlas"}</code> can sign instead of sending the Bearer token. The signature is Ed25519 over <code>METHOD|PATH|TIMESTAMP|WEBID</code>. The headers the server reads are <code>X-Agent-WebID</code>, <code>X-Agent-Public-Key</code>, <code>X-Agent-Timestamp</code>, and <code>X-Agent-Signature</code>. The response fields the test uses are <code>token</code>, <code>agent.webId</code>, <code>agent.podPath</code>, <code>agent.publicKey</code>, and <code>privateKey</code>. Machine clients that are not agents use <code>POST /idp/client-credentials</code> and then <code>POST /oauth/token</code> with <code>grant_type=client_credentials</code>. Those routes are listed on the <a href="api.html">API</a> page.</p>
+
             <div class="callout">
                 <h4>Next Steps</h4>
-                <p>Now that you understand authentication in Sense-Proto, learn about <a href="server-setup.html">Setting Up a Server</a> to create your own Sense-Proto infrastructure.</p>
+                <p>Run the server from <a href="server-setup.html">Setting Up a Server</a>, then call it from <a href="client-apps.html">Building Client Apps</a>. Source: <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>.</p>
             </div>
         </main>
     </div>
 
     <footer>
-        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://ecash.org/" target="_blank">Ecash</a></p>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://e.cash/" target="_blank">Ecash</a></p>
     </footer>
 </body>
 </html> 

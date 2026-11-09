@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Client Apps | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html" class="active">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Building Client Apps</h1>
+
+            <p>A client is any program that sends HTTP to a pod. OpenID, the server in <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>, accepts a Bearer token from <code>POST /idp/login</code> or <code>POST /idp/register</code>, a client-credentials token from <code>POST /oauth/token</code>, or an Ed25519 signature on each request. This repository also includes a Python Solid client under <code>solid/</code>.</p>
+
+            <div class="callout">
+                <h4>What this page uses</h4>
+                <p>The curl session talks to OpenID. The Python commands are the CLI documented in <code>solid/README.md</code> in <a href="https://github.com/sense-makors/sense-makors" target="_blank">sense-makors/sense-makors</a>. They are different programs. Point each one at a pod you run.</p>
+            </div>
+
+            <h2>Worked example: Bearer token write</h2>
+
+            <p>Start the server with the commands on the <a href="guides.html">Guides</a> page, then register:</p>
+
+            <pre><code>curl -s -X POST http://localhost:3000/idp/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"ada@example.com","password":"testpass123","name":"Ada","createPod":true}' \
+  > /tmp/openid-reg.json
+TOKEN=$(python3 -c 'import json; print(json.load(open("/tmp/openid-reg.json"))["token"])')</code></pre>
+
+            <p>That is the same read the OpenID functional test uses: it stores the response and prints the <code>token</code> field. Then create a resource and read it back:</p>
+
+            <pre><code>curl -s -D - -o /dev/null -X PUT http://localhost:3000/workspace/note.txt \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: text/plain' \
+  --data 'hello functional'
+
+curl -s http://localhost:3000/workspace/note.txt</code></pre>
+
+            <p>The create response is <code>201</code> and includes an <code>ETag</code>. The GET body is <code>hello functional</code>. A second <code>PUT</code> that sends <code>If-Match: "deadbeef"</code> returns <code>412</code>. Sending <code>Authorization: Bearer not-a-jwt</code> returns <code>401</code>.</p>
+
+            <h2>Worked example: signed agent request</h2>
+
+            <p><code>POST /agents</code> with <code>{"name":"Atlas"}</code> returns <code>token</code>, <code>agent.webId</code>, <code>agent.podPath</code>, <code>agent.publicKey</code>, and <code>privateKey</code>. The agent profile is public at <code>{podPath}profile/card</code>. To write without putting the Bearer token on the request, sign <code>METHOD|PATH|TIMESTAMP|WEBID</code> with the Ed25519 private key and send:</p>
+
+            <pre><code>PUT /{podPath}inbox/signed.txt HTTP/1.1
+Host: localhost:3000
+Content-Type: text/plain
+X-Agent-WebID: {agent.webId}
+X-Agent-Public-Key: {agent.publicKey}
+X-Agent-Timestamp: {unix seconds}
+X-Agent-Signature: {Ed25519 signature, base64url}
+
+signed</code></pre>
+
+            <p>The functional test expects <code>201</code> for that PUT. The same agent token can also <code>PUT {podPath}inbox/job.json</code> with <code>Authorization: Bearer</code> and <code>Content-Type: application/json</code>.</p>
+
+            <h2>Python client in this repository</h2>
+
+            <p><code>solid/README.md</code> documents a CLI for a Solid pod. After the dependencies in that README are installed, a file round-trip looks like this (the URLs are the ones in that README; replace them with your pod):</p>
+
+            <pre><code>python -m solid.src.cli file write https://example.org/my-pod/file.txt --input "Hello, Solid!"
+python -m solid.src.cli file read https://example.org/my-pod/file.txt</code></pre>
+
+            <p>Login against an issuer is a separate command, for example <code>python -m solid.src.cli auth login --issuer https://login.inrupt.com/</code>. That issuer is not the OpenID process on port 3000. For OpenID, use the Bearer flow above or the MCP URL <code>http://localhost:3000/mcp</code>.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>Model the document you just wrote on the <a href="data-model.html">Data Modeling</a> page, and see every route on the <a href="api.html">API</a> page. Server source: <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>

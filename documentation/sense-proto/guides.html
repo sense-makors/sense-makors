@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guides | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Guides</h1>
+
+            <p>These guides walk through a Solid pod, a WebID, and the HTTP calls that read and write it. The server used in the examples is <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID</a>, the Go Solid server in <code>Hewlbern/openID</code>. Each guide below is a page on this site.</p>
+
+            <div class="callout">
+                <h4>Start here</h4>
+                <p>Run the server, then follow one guide. The commands in the worked example are the same ones in the OpenID README.</p>
+            </div>
+
+            <h2>Guide index</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Guide</th>
+                        <th>What you do</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="quickstart.html">Quickstart</a></td>
+                        <td>Create a pod and a small browser app that reads and writes notes.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="server-setup.html">Setting Up a Server</a></td>
+                        <td>Run OpenID locally, then see the Community Solid Server options already documented on that page.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="client-apps.html">Building Client Apps</a></td>
+                        <td>Call the pod with a Bearer token, or sign a request as an agent.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="data-model.html">Data Modeling</a></td>
+                        <td>Shape a WebID profile, a Turtle graph, and a saved conversation record.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="sparql.html">Using SPARQL</a></td>
+                        <td>Patch a Turtle resource with <code>application/sparql-update</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="authentication.html">Authentication</a></td>
+                        <td>Register, log in, and send the Bearer token OpenID returns.</td>
+                    </tr>
+                    <tr>
+                        <td><a href="api.html">API</a></td>
+                        <td>The HTTP routes the examples call.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Worked example: start the server and check it</h2>
+
+            <p>From a checkout of <a href="https://github.com/Hewlbern/openID" target="_blank">github.com/Hewlbern/openID</a>:</p>
+
+            <pre><code>git clone https://github.com/Hewlbern/openID.git
+cd openID
+go run ./cmd/server -port 3000 -storage ./data</code></pre>
+
+            <p>The process listens on port 3000 and stores pod files under <code>./data</code>. The health route returns JSON:</p>
+
+            <pre><code>curl -s http://localhost:3000/health
+# {"status":"ok"}</code></pre>
+
+            <p>The console is <code>http://localhost:3000/</code>. The handle-claim page is <code>http://localhost:3000/welcome</code>. After this check, register an account with the example on the <a href="authentication.html">Authentication</a> page, or read the route list on the <a href="api.html">API</a> page.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>Keep going with <a href="server-setup.html">Setting Up a Server</a> or <a href="client-apps.html">Building Client Apps</a>.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>

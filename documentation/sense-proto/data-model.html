@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Modeling | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html" class="active">Data Modeling</a></li>
+                <li><a href="sparql.html">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Data Modeling</h1>
+
+            <p>Pods store documents. A WebID profile is a Turtle document. A note can be <code>text/plain</code> or Turtle. OpenID also stores saved chat transcripts as JSON plus a Turtle description. This page uses those shapes. The server is <a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>.</p>
+
+            <h2>WebID profile</h2>
+
+            <p>Registration with <code>"name":"Ada"</code> publishes a profile the server will return from <code>GET {podPath}profile/card</code>. The functional test checks that the body contains the account name. A profile that matches the WebID page on this site looks like this:</p>
+
+            <pre><code>@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+
+&lt;#me&gt;
+    a foaf:Person ;
+    foaf:name "Ada" .</code></pre>
+
+            <p>The WebID is that document plus the fragment <code>#me</code>, for example the <code>webId</code> field returned by <code>POST /idp/register</code>, which contains <code>profile/card#me</code>. See <a href="webid.html">WebID</a>.</p>
+
+            <h2>Worked example: a Turtle graph</h2>
+
+            <p>This is the document the OpenID functional test writes before it patches another triple in. <code>PUT</code> it with the Bearer token from <a href="authentication.html">Authentication</a>:</p>
+
+            <pre><code>curl -s -X PUT http://localhost:3000/workspace/graph.ttl \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: text/turtle' \
+  --data '&lt;http://ex/a&gt; &lt;http://ex/b&gt; &lt;http://ex/c&gt; .'</code></pre>
+
+            <p><code>GET /workspace/graph.ttl</code> returns that triple. The <a href="sparql.html">SPARQL</a> page inserts a second triple into the same resource.</p>
+
+            <h2>Conversation records</h2>
+
+            <p>When a transcript is saved through OpenID, the server writes two resources under the account pod:</p>
+
+            <ul>
+                <li><code>{pod}/{handle}/conversations/spark/{id}.json</code> — JSON-LD transcript</li>
+                <li><code>{pod}/{handle}/conversations/spark/{id}.ttl</code> — Conversation and Message triples</li>
+            </ul>
+
+            <p>The containers <code>conversations/</code> and <code>conversations/spark/</code> are created first, with a trailing slash. The Turtle side uses <code>dcterms:created</code>, <code>dcterms:modified</code>, <code>schema:dateCreated</code>, per-message timestamps, <code>foaf</code> and <code>schema</code> roles, the owner WebID, and <code>source=gemini-spark</code>.</p>
+
+            <p>The in-server SPARQL helper is tested against JSON-LD like the following. <code>oid</code> expands to <code>{base}/ns/records#</code>:</p>
+
+            <pre><code>{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "oid": "http://localhost:3000/ns/records#",
+    "workType": "oid:workType"
+  },
+  "@id": "http://localhost:3000/ada/records/traces/openid-agent-identity/abc.jsonld",
+  "@type": ["CreativeWork", "oid:AgentTrace"],
+  "name": "Wire MCP into OpenID",
+  "workType": "identity-protocol"
+}</code></pre>
+
+            <p>That document is the fixture in <code>internal/rdf/sparql_test.go</code>. It is a record shape, not a second public write API. Querying it is covered on the <a href="sparql.html">SPARQL</a> page.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>Patch <code>graph.ttl</code> from <a href="sparql.html">Using SPARQL</a>, or store the note from a client on <a href="client-apps.html">Building Client Apps</a>.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Using SPARQL | Sense-Proto Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Sense<span>Proto</span></a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Docs</a></li>
+                <li><a href="guides.html">Guides</a></li>
+                <li><a href="api.html">API</a></li>
+                <li><a href="contribute.html">Contribute</a></li>
+                <li><a href="https://github.com/Hewlbern/openID" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Getting Started</h3>
+            <ul>
+                <li><a href="index.html">Introduction</a></li>
+                <li><a href="overview.html">Overview</a></li>
+                <li><a href="quickstart.html">Quickstart</a></li>
+            </ul>
+            <h3>Core Concepts</h3>
+            <ul>
+                <li><a href="webid.html">WebID</a></li>
+                <li><a href="pods.html">Pods</a></li>
+                <li><a href="linked-data.html">Linked Data</a></li>
+                <li><a href="access-control.html">Access Control</a></li>
+                <li><a href="authentication.html">Authentication</a></li>
+            </ul>
+            <h3>Guides</h3>
+            <ul>
+                <li><a href="server-setup.html">Setting Up a Server</a></li>
+                <li><a href="client-apps.html">Building Client Apps</a></li>
+                <li><a href="data-model.html">Data Modeling</a></li>
+                <li><a href="sparql.html" class="active">Using SPARQL</a></li>
+            </ul>
+            <h3>Comparisons</h3>
+            <ul>
+                <li><a href="vs-atproto.html">Sense-Proto vs. ATProto</a></li>
+                <li><a href="vs-activitypub.html">Sense-Proto vs. ActivityPub</a></li>
+            </ul>
+            <h3>Community</h3>
+            <ul>
+                <li><a href="contribute.html">Contributing</a></li>
+                <li><a href="sense-maker.html">Sense-Maker</a></li>
+                <li><a href="resources.html">Resources</a></li>
+            </ul>
+        </aside>
+
+        <main class="content">
+            <h1>Using SPARQL</h1>
+
+            <p>OpenID (<a href="https://github.com/Hewlbern/openID" target="_blank">Hewlbern/openID</a>) accepts SPARQL Update as a patch against a Turtle resource. It also has an in-process SELECT helper. Those are different operations. This page shows both, using the requests and queries in the repository tests.</p>
+
+            <div class="callout">
+                <h4>Update over HTTP, SELECT in process</h4>
+                <p><code>PATCH</code> with <code>Content-Type: application/sparql-update</code> changes a resource. <code>QuerySPARQL</code> in <code>internal/rdf/sparql.go</code> runs a SELECT subset and rejects <code>INSERT</code>. There is no separate HTTP query endpoint in the functional test.</p>
+            </div>
+
+            <h2>Worked example: PATCH a Turtle file</h2>
+
+            <p>Write the starting graph with the Bearer token from <a href="authentication.html">Authentication</a>. This is the request in <code>test/functional/run.sh</code>:</p>
+
+            <pre><code>curl -s -X PUT http://localhost:3000/workspace/graph.ttl \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: text/turtle' \
+  --data '&lt;http://ex/a&gt; &lt;http://ex/b&gt; &lt;http://ex/c&gt; .'</code></pre>
+
+            <p>Insert one triple. The test expects HTTP <code>200</code>, then a GET body that contains <code>http://ex/d</code>:</p>
+
+            <pre><code>curl -s -D - -X PATCH http://localhost:3000/workspace/graph.ttl \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/sparql-update' \
+  --data 'INSERT DATA { &lt;http://ex/a&gt; &lt;http://ex/b&gt; &lt;http://ex/d&gt; . }'
+
+curl -s http://localhost:3000/workspace/graph.ttl</code></pre>
+
+            <p><code>OPTIONS /workspace/note.txt</code> returns <code>Accept-Patch</code> containing <code>sparql-update</code>. The same server accepts an N3 patch with <code>Content-Type: text/n3</code>. The test writes <code>&lt;http://ex/s&gt; &lt;http://ex/p&gt; &lt;http://ex/o1&gt; .</code> and then patches in <code>&lt;http://ex/s&gt; &lt;http://ex/p&gt; &lt;http://ex/o2&gt; .</code>, expecting <code>200</code> and the new object in the GET body.</p>
+
+            <h2>SELECT against a graph in memory</h2>
+
+            <p><code>QuerySPARQL</code> applies a SELECT to a graph already parsed from JSON-LD. Default prefixes include <code>schema:</code> for <code>https://schema.org/</code> and <code>oid:</code> for <code>{base}/ns/records#</code>. This query is the one in <code>internal/rdf/sparql_test.go</code>. It returns the row whose name contains <code>openid</code> and whose <code>workType</code> is <code>identity-protocol</code>:</p>
+
+            <pre><code>PREFIX schema: &lt;https://schema.org/&gt;
+PREFIX oid: &lt;http://localhost:3000/ns/records#&gt;
+
+SELECT ?name ?workType WHERE {
+  ?id a oid:AgentTrace ;
+      schema:name ?name ;
+      oid:workType ?workType .
+  FILTER(CONTAINS(LCASE(?name), "openid"))
+}</code></pre>
+
+            <p>Passing <code>INSERT DATA { &lt;a&gt; &lt;b&gt; &lt;c&gt; }</code> to <code>QuerySPARQL</code> returns an error that mentions <code>SELECT</code>. Use HTTP <code>PATCH</code> when you need to write.</p>
+
+            <div class="callout">
+                <h4>Next steps</h4>
+                <p>The document you patched is described on <a href="data-model.html">Data Modeling</a>. The surrounding routes are on the <a href="api.html">API</a> page.</p>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sense-Proto. Decentralized Data with Ecash Memecoins. <a href="https://solidproject.org/" target="_blank">Solid Project</a> | <a href="https://github.com/Hewlbern/openID" target="_blank">OpenID server</a></p>
+    </footer>
+</body>
+</html>
